@@ -608,6 +608,9 @@ pub fn psd_to_document_with(file: &PsdFile, ctl: &photocraft_raster::Interrupt) 
     for b in &file.global_blocks {
         doc.metadata.psd_global_blocks.push((b.signature, b.key, Arc::new(b.data.clone())));
     }
+    if file.layer_info.is_none() && file.global_blocks.iter().any(|b| matches!(&b.key, b"Lr16" | b"Lr32" | b"Layr")) {
+        warnings.push("the layers could not be read; only the merged image was opened".into());
+    }
     doc.patterns = crate::pattern_map::from_global_blocks(&doc);
     // Notes (`Anno`) and the measurement scale (resource 1074); raw data stays for verbatim export.
     doc.notes = crate::annotations_map::notes_from_blocks(&doc);

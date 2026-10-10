@@ -1466,8 +1466,12 @@ fn document_to_psd_nested(doc: &Document, opts: &PsdExportOptions, depth: u32) -
         .collect();
     let previous = (!text_layers.is_empty()).then(|| preserved.iter().find(|(_, key, _)| key == b"Txt2").map(|(_, _, data)| data.to_vec())).flatten();
     let txt2 = (!text_layers.is_empty()).then(|| photocraft_text::psd::build_txt2(&text_layers, previous.as_deref()));
+    let has_layers_to_write = !ex.records.is_empty();
     for (sig, key, data) in preserved {
         if txt2.is_some() && key == *b"Txt2" {
+            continue;
+        }
+        if has_layers_to_write && matches!(&key, b"Lr16" | b"Lr32" | b"Layr") {
             continue;
         }
         let mut tb = TaggedBlock::new(key, data.to_vec());
